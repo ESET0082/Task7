@@ -43,9 +43,9 @@ jobs:
         run: |
           echo "Replacing image in deployment.yaml -> $IMAGE_NAME:${SHA}"
           cp deployment.yaml deployment.yaml.bak || true
-          perl -0777 -pe "s/^(\\s*image:\\s*).*\$/\${1}${{ env.IMAGE_NAME }}:${{ env.SHA }}/m" -i deployment.yaml
+          sed -i "s#^\(\s*image:\s*\).*#\1${IMAGE_NAME}:${SHA}#" deployment.yaml
           echo "---- deployment.yaml after replacement ----"
-          sed -n '1,200p' deployment.yaml
+          cat deployment.yaml
 
       - name: Commit updated deployment.yaml back to main
         env:
