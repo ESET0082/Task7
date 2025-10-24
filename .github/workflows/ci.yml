@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  IMAGE_NAME: gopal77esyasoft/my-app@sha256:b39774c4df555f1904127ef4ad96081cc36f57160e21650f5902315b045fe94b
+  IMAGE_NAME: gopal77esyasoft/my-app
 
 jobs:
   build-push-update:
@@ -40,16 +40,10 @@ jobs:
             ${{ env.IMAGE_NAME }}:${{ env.SHA }}
 
       - name: Update deployment.yaml with new image tag
-        # This replaces the image line in deployment.yaml with the new SHA-tagged image.
         run: |
           echo "Replacing image in deployment.yaml -> $IMAGE_NAME:${SHA}"
-          # Create a backup first (safe-guard)
           cp deployment.yaml deployment.yaml.bak || true
-
-          # Replace line that starts with '      image:' or '    image:' (handles indentation) with the new image reference.
-          # This uses a regex: match 'image: <something>' and replace with 'image: <IMAGE_NAME>:<SHA>'
           perl -0777 -pe "s/^(\\s*image:\\s*).*\$/\${1}${{ env.IMAGE_NAME }}:${{ env.SHA }}/m" -i deployment.yaml
-
           echo "---- deployment.yaml after replacement ----"
           sed -n '1,200p' deployment.yaml
 
@@ -58,20 +52,13 @@ jobs:
           GIT_AUTHOR_NAME: github-actions[bot]
           GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
         run: |
-          # Configure git
           git config user.name "${GIT_AUTHOR_NAME}"
           git config user.email "${GIT_AUTHOR_EMAIL}"
-
-          # Show git status for debugging
           git status --porcelain
           git add deployment.yaml
-
-          # Only commit if there's a change
           if ! git diff --cached --quiet; then
             git commit -m "ci: update deployment.yaml image -> $IMAGE_NAME:${SHA} (auto)"
-            # Push changes using GITHUB_TOKEN to authenticate
             git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" HEAD:main
             echo "Pushed updated deployment.yaml to main"
           else
             echo "No change to deployment.yaml; nothing to commit"
-          fi
