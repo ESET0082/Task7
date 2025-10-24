@@ -6,7 +6,7 @@ on:
       - main
 
 env:
-  IMAGE_NAME: gopal77esyasoft/my-app
+  IMAGE_NAME: gopal77esyasoft/my-app@sha256:b39774c4df555f1904127ef4ad96081cc36f57160e21650f5902315b045fe94b
 
 jobs:
   build-push-update:
