@@ -75,18 +75,3 @@ jobs:
           else
             echo "No change to deployment.yaml; nothing to commit"
           fi
-
-      - name: (Optional) Deploy to Kubernetes cluster using KUBE_CONFIG_DATA
-        if: ${{ secrets.KUBE_CONFIG_DATA != '' }}
-        env:
-          KUBECONFIG: ${{ runner.temp }}/kubeconfig
-        run: |
-          echo "KUBE_CONFIG_DATA found — deploying to cluster"
-          mkdir -p $(dirname $KUBECONFIG)
-          echo "${{ secrets.KUBE_CONFIG_DATA }}" | base64 --decode > "$KUBECONFIG"
-          # sanity check
-          KUBECTL_VERSION=$(kubectl version --client --short || true)
-          echo "kubectl client: $KUBECTL_VERSION"
-          # apply deployment
-          kubectl apply -f deployment.yaml
-          kubectl rollout status deployment/my-app-deployment --timeout=120s || true
